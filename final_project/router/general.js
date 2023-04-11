@@ -26,6 +26,7 @@ public_users.post("/register", (req, res) => {
 const allBooksPromise = new Promise((resolve,reject)=>{
 resolve(JSON.stringify(books,null,4));
 })
+//
 public_users.get("/", function (req, res) {
   allBooksPromise
   .then(data=>res.send(data));
@@ -36,7 +37,7 @@ public_users.get("/", function (req, res) {
 const booksByIsbnPromise = (param) => new Promise((resolve,reject)=>{
   resolve(JSON.stringify(books[param],null,4));
 })
-
+//
 public_users.get("/isbn/:isbn", function (req, res) {
   let isbn = req.params.isbn;
   if (isbn > 10 || isbn < 0) {
@@ -60,6 +61,7 @@ const booksByPromise = (param1,param2) => new Promise((resolve,reject)=>{
     resolve(JSON.stringify(books[isbn]))
   }
 })
+//
 public_users.get("/author/:author", function (req, res) {
   let author = req.params.author;
   booksByPromise("author",author)
