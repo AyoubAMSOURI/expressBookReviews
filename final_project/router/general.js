@@ -23,47 +23,56 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
+const allBooksPromise = new Promise((resolve,reject)=>{
+resolve(JSON.stringify(books,null,4));
+})
 public_users.get("/", function (req, res) {
-  res.send(JSON.stringify(books, null, 4));
+  allBooksPromise
+  .then(data=>res.send(data));
 });
 
 // Get book details based on ISBN
+
+const booksByIsbnPromise = (param) => new Promise((resolve,reject)=>{
+  resolve(JSON.stringify(books[param],null,4));
+})
+
 public_users.get("/isbn/:isbn", function (req, res) {
   let isbn = req.params.isbn;
   if (isbn > 10 || isbn < 0) {
     res.status(404).json({ message: "choose number between 1 and 10" });
   } else {
-    res.send(JSON.stringify(books[isbn]));
+    booksByIsbnPromise(isbn)
+    .then(data=>res.send(data));
   }
 });
 
 // Get book details based on author
-public_users.get("/author/:author", function (req, res) {
-  let author = req.params.author;
+const booksByPromise = (param1,param2) => new Promise((resolve,reject)=>{
   let booksToArray = Object.entries(books);
   let bookByAuthor = booksToArray.filter(
-    (book) => book[1]["author"] === author
+    (book) => book[1][param1] === param2
   );
-
   if (bookByAuthor == []) {
-    res.status(404).json({ message: "try with other authors" });
+    reject({ message: "try with other title or author" });
   } else {
     let isbn = bookByAuthor[0][0];
-    res.send(JSON.stringify(books[isbn]));
+    resolve(JSON.stringify(books[isbn]))
   }
+})
+public_users.get("/author/:author", function (req, res) {
+  let author = req.params.author;
+  booksByPromise("author",author)
+  .then(data=>res.send(data))
+  .catch(err=>res.status(404).json(err))
 });
 
 // Get all books based on title
 public_users.get("/title/:title", function (req, res) {
   let title = req.params.title;
-  let booksToArray = Object.entries(books);
-  let bookByTitle = booksToArray.filter((book) => book[1]["title"] === title);
-  if (bookByTitle == []) {
-    res.status(404).json({ message: "try with other titles" });
-  } else {
-    let isbn = bookByTitle[0][0];
-    res.send(JSON.stringify(books[isbn]));
-  }
+  booksByPromise("title",title)
+  .then(data=>res.send(data))
+  .catch(err=>res.status(404).json(err))
 });
 
 //  Get book review
